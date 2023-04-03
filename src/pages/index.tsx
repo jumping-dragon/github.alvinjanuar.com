@@ -1,13 +1,8 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import Link from "next/link";
 import NavBar from "~/components/NavBar";
 
-import { api } from "~/utils/api";
-
 const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from Alvin" });
-
   return (
     <>
       <Head>

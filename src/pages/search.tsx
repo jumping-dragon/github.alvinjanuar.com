@@ -1,8 +1,9 @@
-import { type NextPage } from "next";
+import { type NextPage } from "next"
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 import NavBar from "~/components/NavBar";
+import { RepositoryMetadata } from "~/server/api/routers/example";
 
 import { api } from "~/utils/api";
 
@@ -18,13 +19,13 @@ const Search: NextPage = () => {
       language,
       description,
       owner,
-    }) => ({
+    }: RepositoryMetadata) => ({
       full_name,
       html_url,
       language,
       description,
       avatar_url: owner.avatar_url
-    }))
+    })) || []
   }, [data])
 
 
@@ -38,7 +39,7 @@ const Search: NextPage = () => {
       <main>
         <NavBar />
         {isLoading && <div className="text-2xl text-white">Loading...</div>}
-        {error && <pre className="text-sm text-white">{JSON.stringify(error, 0, 2)}</pre>}
+        {error && <pre className="text-sm text-white">{JSON.stringify(error, [0], 2)}</pre>}
         {data && (
           <div className="p-10">
             <div>Total Count:{data.total_count}{'...' && data.incomplete_results}</div>
@@ -51,7 +52,7 @@ const Search: NextPage = () => {
                 description,
                 avatar_url
               }) => (
-                <div className="flex flex-col my-10">
+                <div key={full_name} className="flex flex-col my-10">
                   <img className="w-20" src={avatar_url} alt="baba" />
                   <div>{full_name}</div>
                   <a href={html_url}>{html_url}</a>
