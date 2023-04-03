@@ -20,7 +20,7 @@ const NavBar: NextComponentType = () => {
       }}>
         <Form.Field name="search">
           <Form.Control asChild>
-            <input type="text" value={router.query.q} required />
+            <input type="text" defaultValue={router.query.q} required />
           </Form.Control>
         </Form.Field>
         <Form.Submit asChild>
