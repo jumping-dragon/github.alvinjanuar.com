@@ -18,20 +18,51 @@ export const exampleRouter = createTRPCRouter({
       };
     }),
   search: publicProcedure
-    .input(z.object({ text: z.string() }))
+    .input(z.object({
+      text: z.string(),
+      limit: z.number().min(1).max(100).nullish(),
+      cursor: z.number().nullish(),
+    }))
     .query(async ({ input }) => {
-      const response = await fetch(GITHUB_API_ENDPOINT + "/search/repositories?per_page=5&q=" + encodeURIComponent(input.text)
-      )
-      const parsedResponse = await response.json() as SearchRepoResponse
-      return parsedResponse
+      const page = input.cursor ?? 1;
+      const limit = input.limit ?? 10;
+
+      const params = {
+        per_page: limit,
+        q: encodeURIComponent(input.text),
+        page
+      };
+
+      const response = await fetch(GITHUB_API_ENDPOINT + '/search/repositories?' + convertToQuery(params))
+      const data = await response.json() as SearchRepoResponse
+      return {
+        ...data,
+        nextCursor: getNextPage(page, limit, data.total_count)
+      }
     }),
 });
+
+const convertToQuery = (kv: { [key: string]: string | number }) => {
+  return Object.entries(kv)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&')
+}
+
+const getNextPage = (currentPage: number, limit: number, totalCount: number) => {
+  const remainder = totalCount % limit;
+  const totalPage = remainder > 0 ? totalCount / limit + 1 : totalCount / limit;
+  if (currentPage + 1 <= totalPage) {
+    return currentPage + 1
+  }
+}
 
 
 type SearchRepoResponse = {
   total_count: number,
   incomplete_results: boolean,
-  items: RepositoryMetadata[]
+  items: RepositoryMetadata[],
+  // TODO: error handling
+  message?: string
 }
 
 export type RepositoryMetadata = {
