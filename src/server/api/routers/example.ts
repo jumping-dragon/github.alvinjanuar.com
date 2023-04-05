@@ -1,5 +1,5 @@
 import { z } from "zod";
-
+import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 function delay<T>(t: number, v: T) {
@@ -34,10 +34,21 @@ export const exampleRouter = createTRPCRouter({
       };
 
       const response = await fetch(GITHUB_API_ENDPOINT + '/search/repositories?' + convertToQuery(params))
-      const data = await response.json() as SearchRepoResponse
-      return {
-        ...data,
-        nextCursor: getNextPage(page, limit, data.total_count)
+
+      const data = await response.json() as SearchRepoResponse | SearchRepoError
+
+      if (isError(data)) {
+        const { message, documentation_url } = data;
+        throw new TRPCError({
+          code: 'TOO_MANY_REQUESTS',
+          message,
+          cause: documentation_url
+        });
+      } else {
+        return {
+          ...data,
+          nextCursor: getNextPage(page, limit, data.total_count)
+        }
       }
     }),
 });
@@ -61,8 +72,15 @@ type SearchRepoResponse = {
   total_count: number,
   incomplete_results: boolean,
   items: RepositoryMetadata[],
-  // TODO: error handling
-  message?: string
+}
+
+type SearchRepoError = {
+  message: string
+  documentation_url: string
+}
+
+function isError(response: SearchRepoError | SearchRepoResponse): response is SearchRepoError {
+  return (response as SearchRepoError).message !== undefined;
 }
 
 export type RepositoryMetadata = {
