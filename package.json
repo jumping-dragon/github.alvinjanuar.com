@@ -6,7 +6,10 @@
     "build": "next build",
     "dev": "next dev --hostname 0.0.0.0",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "dev:ts": "pnpm dev & pnpm ts:watch",
+    "ts": "tsc --noEmit --incremental",
+    "ts:watch": "pnpm ts --watch"
   },
   "dependencies": {
     "@radix-ui/react-form": "^0.0.2",
