@@ -8,7 +8,7 @@ import { api } from "~/utils/api";
 
 const Search: NextPage = () => {
   const router = useRouter()
-  const text = typeof router.query.q === 'string' ? router.query.q : ''
+  const text = String(router.query.q)
   const {
     data,
     error,

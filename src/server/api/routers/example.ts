@@ -29,7 +29,7 @@ export const exampleRouter = createTRPCRouter({
 
       const params = {
         per_page: limit,
-        q: encodeURIComponent(input.text),
+        q: input.text,
         page
       };
 
